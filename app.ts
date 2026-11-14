@@ -1235,10 +1235,10 @@ function fetchObjects(
   return { objects, shallow: [...shallowSet].sort(), unshallow: unshallow.sort() };
 }
 
-// Sideband-wrap pack bytes into band-1 packets of at most 65516 payload bytes.
+// Sideband-wrap pack bytes into band-1 packets: 1 band byte + 65515 data bytes = 65516 payload, 65520 total.
 function sidebandPack(pack: Buffer): Buffer[] {
   const out: Buffer[] = [];
-  const CHUNK = 65516;
+  const CHUNK = 65515;
   for (let off = 0; off < pack.length; off += CHUNK) {
     const slice = pack.subarray(off, Math.min(pack.length, off + CHUNK));
     const payload = Buffer.concat([Buffer.from([1]), slice]);
@@ -1385,7 +1385,7 @@ async function handleGitReceivePack(req: IncomingMessage, res: ServerResponse, r
   for (const pull of repo.pulls) pull.jsonCache = '';
   const inner = Buffer.concat([...lines.map((l) => pktLine(`${l}\n`)), PKT_FLUSH]);
   const parts: Buffer[] = [];
-  const CHUNK = 65516;
+  const CHUNK = 65515;
   for (let off = 0; off < inner.length; off += CHUNK) {
     const slice = inner.subarray(off, Math.min(inner.length, off + CHUNK));
     parts.push(pktLine(Buffer.concat([Buffer.from([1]), slice])));
